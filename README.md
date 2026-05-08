@@ -33,10 +33,12 @@
 
 | 리스크 요소 | 예시 |
 | --- | --- |
-| 미해결 결함 | P1/P2 open defect, workaround 여부, reopen 여부 |
-| 실패 테스트 | critical/high 테스트 실패 |
-| 변경 범위 | critical area 변경, 변경 크기 |
-| 자동화 커버리지 | 전체/핵심 플로우 커버리지 부족 |
+| 미해결 결함 | P1/P2 open defect, 고객 영향, workaround 여부, reopen 여부, 결함 age |
+| 테스트 결과 | critical/high 실패, blocked 테스트, flaky warning, manual evidence |
+| 변경 범위 | critical area 변경, 변경 크기, 외부 의존성, data migration 여부 |
+| 자동화 커버리지 | 전체/핵심 플로우/변경 영역 커버리지 부족 |
+| 품질 신호 | smoke/regression/API pass rate, flaky count, blocked count |
+| 릴리즈 준비도 | QA sign-off, 운영 승인, rollback plan/test, 모니터링 owner 준비 |
 
 예시 점수:
 
@@ -49,6 +51,33 @@ risk_score =
 ```
 
 점수는 100점으로 cap 처리하며, 점수뿐 아니라 어떤 항목이 위험을 높였는지 함께 출력합니다.
+
+## 입력 데이터
+
+현재 버전은 외부 시스템에 직접 연결하지 않고, 릴리즈 판단에 필요한 파일을 읽어 점수를 계산합니다.
+
+| 파일 | 의미 |
+| --- | --- |
+| `data/release_sample.json` | 릴리즈 기본 정보, 변경 범위, 자동화 커버리지, 품질 신호, 승인/rollback 준비 상태 |
+| `data/defects_sample.csv` | 미해결/해결 결함 목록, 심각도, 고객 영향, 우회 가능 여부, 결함 age, QA 검증 여부 |
+| `data/test_results_sample.csv` | smoke/regression/API/visual 테스트 결과, criticality, failed/blocked/warning 상태, evidence |
+| `data/change_scope_sample.json` | 변경 모듈, feature flag, 외부 의존성, 수동 QA focus note |
+
+예를 들어 결함 데이터는 단순히 P1/P2 개수만 보지 않습니다.
+
+```csv
+id,title,severity,status,area,affected_flow,customer_impact,workaround,reopened,age_days,verified_by_qa,linked_test
+BUG-101,Payment confirmation intermittently fails,P1,open,payment,checkout,high,false,true,4,false,TC-002
+```
+
+테스트 결과도 단순 pass/fail보다, 어떤 계층의 어떤 critical flow가 실패했는지 보도록 구성했습니다.
+
+```csv
+id,layer,suite,case_name,area,criticality,status,execution_type,evidence,flaky,failure_reason
+TC-002,ui,smoke,checkout_card_payment,payment,critical,failed,automated,screenshot,false,confirmation timeout
+```
+
+이 구조는 나중에 Jira, GitHub Actions, Excel 체크리스트, CI 리포트에서 데이터를 가져오는 형태로 확장할 수 있습니다.
 
 ## 프로젝트 구조
 
