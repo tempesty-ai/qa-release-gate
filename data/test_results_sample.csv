@@ -1,0 +1,9 @@
+id,suite,case_name,area,criticality,status,duration_sec
+TC-001,smoke,login_success,auth,critical,passed,18
+TC-002,smoke,checkout_card_payment,payment,critical,failed,42
+TC-003,smoke,order_history,order,high,passed,35
+TC-004,regression,catalog_search,catalog,medium,passed,21
+TC-005,regression,coupon_apply,payment,high,failed,31
+TC-006,regression,password_reset,auth,medium,passed,27
+TC-007,api,payment_status_callback,payment,critical,passed,12
+TC-008,api,user_session_refresh,auth,high,passed,10

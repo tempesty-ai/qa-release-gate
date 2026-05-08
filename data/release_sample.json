@@ -1,0 +1,36 @@
+{
+  "release_id": "REL-2026.05.08",
+  "service": "sample-commerce",
+  "release_owner": "QA/PMO",
+  "planned_at": "2026-05-08",
+  "change_summary": "회원 인증, 주문, 결제 플로우의 소규모 개선 릴리즈",
+  "change_scope": [
+    {
+      "area": "auth",
+      "criticality": "high",
+      "change_size": "medium",
+      "user_impact": "login and account access"
+    },
+    {
+      "area": "payment",
+      "criticality": "critical",
+      "change_size": "medium",
+      "user_impact": "checkout completion"
+    },
+    {
+      "area": "catalog",
+      "criticality": "medium",
+      "change_size": "small",
+      "user_impact": "product search"
+    }
+  ],
+  "automation_coverage": {
+    "overall": 72,
+    "critical_flow": 58
+  },
+  "business_window": {
+    "peak_season": false,
+    "monitoring_owner_ready": true,
+    "rollback_plan_ready": true
+  }
+}

@@ -1,0 +1,6 @@
+id,title,severity,status,area,workaround,reopened
+BUG-101,Payment confirmation intermittently fails,P1,open,payment,false,true
+BUG-102,Login error message is unclear,P2,open,auth,true,false
+BUG-103,Catalog filter count mismatch,P3,open,catalog,true,false
+BUG-104,Order history page loads slowly,P2,resolved,order,true,true
+BUG-105,Mobile checkout button overlaps footer,P2,open,payment,true,false
