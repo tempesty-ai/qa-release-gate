@@ -152,7 +152,7 @@ pytest -q
 
 이 프로젝트는 자동화 스크립트보다 릴리즈 품질 판단에 초점을 둡니다.
 
-시니어 QA/PMO 관점에서 중요한 것은 "테스트를 실행했다"가 아니라, "이 릴리즈가 나가도 되는지 어떤 근거로 판단했는가"입니다. 이 저장소는 그 판단 기준을 데이터, 규칙, 리포트, 대시보드로 분리해 보여줍니다.
+시니어 QA 관점에서 중요한 것은 "테스트를 실행했다"가 아니라, "이 릴리즈가 나가도 되는지 어떤 근거로 판단했는가"입니다. 이 저장소는 그 판단 기준을 데이터, 규칙, 리포트, 대시보드로 분리해 보여줍니다.
 
 ## 확장 아이디어
 
@@ -171,5 +171,5 @@ pytest -q
 ## 추천 Topics
 
 ```text
-qa, release-gate, risk-based-testing, test-strategy, quality-engineering, pmo, python, streamlit
+qa, release-gate, risk-based-testing, test-strategy, quality-engineering, python, streamlit
 ```

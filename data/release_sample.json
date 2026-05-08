@@ -1,7 +1,7 @@
 {
   "release_id": "REL-2026.05.08",
   "service": "sample-commerce",
-  "release_owner": "QA/PMO",
+  "release_owner": "QA",
   "planned_at": "2026-05-08",
   "release_type": "minor",
   "deployment_window": "weekday_evening",
