@@ -1,13 +1,36 @@
-# QA Release Gate - 릴리즈 리스크 판단 대시보드
+# `qa-release-gate` — 릴리즈 리스크 판단 대시보드
 
-> 테스트 결과, 미해결 결함, 변경 범위, 자동화 커버리지를 종합해 이번 릴리즈를 배포해도 되는지 판단하는 QA 의사결정 프로젝트입니다.
-> 핵심은 테스트를 많이 돌리는 것이 아니라, 릴리즈 리스크를 설명 가능한 기준으로 판단하는 것입니다.
+> 테스트 결과, 미해결 결함, 변경 범위, 자동화 커버리지를 종합해 **이번 릴리즈를 배포해도 되는지** 판단하는 QA 의사결정 프로젝트.
+> 핵심은 "테스트를 많이 돌리는 것"이 아니라, **"릴리즈 리스크를 설명 가능한 기준으로 판단하는 것"** 입니다.
+
+---
+
+## 한 줄 가치
+
+> **"이 릴리즈가 나가도 되는지 어떤 근거로 판단했는가?"** 라는 질문에 점수와 항목별 기여도로 답하는 저장소.
+> 시니어 QA의 머릿속에만 있던 판단을 **데이터·룰·리포트·대시보드**로 분리해 보여줍니다.
+
+---
 
 ## 데이터 안내
 
-이 저장소의 릴리즈 정보, 결함, 테스트 결과, 변경 범위는 모두 직접 만든 가상 샘플 데이터입니다. 현재 또는 과거 회사/고객사의 이슈, 운영 지표, 릴리즈 기록, 결함 데이터는 포함하지 않습니다.
+이 저장소의 릴리즈 정보, 결함, 테스트 결과, 변경 범위는 모두 직접 만든 **가상 샘플 데이터**입니다. 현재 또는 과거 회사/고객사의 이슈, 운영 지표, 릴리즈 기록, 결함 데이터는 포함하지 않습니다.
 
-## 이 프로젝트가 다루는 문제
+---
+
+## 발견한 크리티컬 리스크
+
+| # | 리스크 | 의미 |
+| --- | --- | --- |
+| R1 | **단순 pass/fail 함정** | "테스트 다 통과했으니 배포한다"는 판단이 **P1 미해결 결함**, **critical area 변경**, **자동화 미커버 영역의 수동 보강 누락**을 놓침 |
+| R2 | **암묵적 판단의 재현 불가능성** | 시니어 QA 머릿속의 "이건 좀 위험한데" 감각이 문서·근거로 남지 않음 → 인적 편차로 인한 잘못된 GO 의사결정 |
+| R3 | **rollback 미비 리스크** | 모니터링 owner, rollback plan/test 없이 배포 → 사고 발생 시 복구 지연이 임팩트를 키움 |
+
+→ 그래서 릴리즈 판단을 `GO` / `CONDITIONAL_GO` / `NO_GO`로 구조화하고, **점수가 어떻게 나왔는지**까지 함께 출력합니다.
+
+---
+
+## 이 프로젝트가 다루는 질문
 
 릴리즈 직전 QA는 단순히 테스트 통과 여부만 보는 것이 아니라 여러 질문을 함께 판단해야 합니다.
 
@@ -17,9 +40,11 @@
 - 자동화 커버리지가 낮은 영역은 수동 보강이 되었는가?
 - 조건부 배포라면 모니터링과 rollback 기준이 준비되어 있는가?
 
-이 저장소는 이런 판단을 `GO`, `CONDITIONAL_GO`, `NO_GO`로 구조화합니다.
+---
 
-## 판정 기준
+## 테스트 설계
+
+### 판정
 
 | 판정 | 의미 |
 | --- | --- |
@@ -27,22 +52,22 @@
 | `CONDITIONAL_GO` | 릴리즈는 가능하지만 조건부 승인, 보강 테스트, 강화 모니터링 필요 |
 | `NO_GO` | 핵심 결함 또는 critical 테스트 실패로 릴리즈 보류 필요 |
 
-## 리스크 모델
+### 룰 기반 리스크 모델 (설명 가능, AI 미사용)
 
-처음부터 복잡한 AI 판단을 쓰지 않고, 설명 가능한 rule-based 모델로 구성했습니다.
+처음부터 복잡한 AI 판단을 쓰지 않고, **설명 가능한 rule-based 모델**로 구성했습니다.
 
 | 리스크 요소 | 예시 |
 | --- | --- |
 | 미해결 결함 | P1/P2 open defect, 고객 영향, workaround 여부, reopen 여부, 결함 age |
 | 테스트 결과 | critical/high 실패, blocked 테스트, flaky warning, manual evidence |
 | 변경 범위 | critical area 변경, 변경 크기, 외부 의존성, data migration 여부 |
-| 자동화 커버리지 | 전체/핵심 플로우/변경 영역 커버리지 부족 |
-| 품질 신호 | smoke/regression/API pass rate, flaky count, blocked count |
+| 자동화 커버리지 | 전체 / 핵심 플로우 / 변경 영역 커버리지 부족 |
+| 품질 신호 | smoke / regression / API pass rate, flaky count, blocked count |
 | 릴리즈 준비도 | QA sign-off, 운영 승인, rollback plan/test, 모니터링 owner 준비 |
 
-예시 점수:
+**예시 점수 계산:**
 
-```text
+```
 risk_score =
   unresolved_p1 * 40
 + failed_critical_tests * 20
@@ -50,38 +75,61 @@ risk_score =
 + low_critical_flow_coverage * 15
 ```
 
-점수는 100점으로 cap 처리하며, 점수뿐 아니라 어떤 항목이 위험을 높였는지 함께 출력합니다.
+점수는 100점으로 cap 처리하며, 점수뿐 아니라 **어떤 항목이 위험을 높였는지** 함께 출력합니다.
 
-## 입력 데이터
+### 입력 데이터의 구조화
 
 현재 버전은 외부 시스템에 직접 연결하지 않고, 릴리즈 판단에 필요한 파일을 읽어 점수를 계산합니다.
 
-| 파일 | 의미 |
+| 파일 | 정보 |
 | --- | --- |
 | `data/release_sample.json` | 릴리즈 기본 정보, 변경 범위, 자동화 커버리지, 품질 신호, 승인/rollback 준비 상태 |
-| `data/defects_sample.csv` | 미해결/해결 결함 목록, 심각도, 고객 영향, 우회 가능 여부, 결함 age, QA 검증 여부 |
-| `data/test_results_sample.csv` | smoke/regression/API/visual 테스트 결과, criticality, failed/blocked/warning 상태, evidence |
+| `data/defects_sample.csv` | 미해결/해결 결함 목록, 심각도, 고객 영향, 우회 가능 여부, **결함 age**, QA 검증 여부 |
+| `data/test_results_sample.csv` | smoke/regression/API/visual 테스트 결과, **criticality**, failed/blocked/warning, evidence |
 | `data/change_scope_sample.json` | 변경 모듈, feature flag, 외부 의존성, 수동 QA focus note |
 
-예를 들어 결함 데이터는 단순히 P1/P2 개수만 보지 않습니다.
+**결함 데이터 예시** — 단순히 P1/P2 개수만 보지 않습니다:
 
-```csv
+```
 id,title,severity,status,area,affected_flow,customer_impact,workaround,reopened,age_days,verified_by_qa,linked_test
 BUG-101,Payment confirmation intermittently fails,P1,open,payment,checkout,high,false,true,4,false,TC-002
 ```
 
-테스트 결과도 단순 pass/fail보다, 어떤 계층의 어떤 critical flow가 실패했는지 보도록 구성했습니다.
+**테스트 결과 예시** — 단순 pass/fail보다, 어떤 계층의 어떤 critical flow가 실패했는지 봅니다:
 
-```csv
+```
 id,layer,suite,case_name,area,criticality,status,execution_type,evidence,flaky,failure_reason
 TC-002,ui,smoke,checkout_card_payment,payment,critical,failed,automated,screenshot,false,confirmation timeout
 ```
 
 이 구조는 나중에 Jira, GitHub Actions, Excel 체크리스트, CI 리포트에서 데이터를 가져오는 형태로 확장할 수 있습니다.
 
+### 검증 자동화 (pytest)
+
+판단 로직이 의도대로 동작하는지 자체 회귀:
+
+- P1 미해결 결함이 있으면 → `NO_GO`
+- 중간 수준 리스크는 → `CONDITIONAL_GO`
+- 낮은 리스크는 → `GO`
+- 리스크 점수는 100점을 넘지 않음
+- resolved defect는 리스크에 포함하지 않음
+
+---
+
+## 자동화의 비즈니스 임팩트
+
+| 임팩트 | 어떻게 발생하는가 |
+| --- | --- |
+| **릴리즈 회의 시간 단축** | "왜 이 릴리즈가 NO_GO인가?"가 구두 설명이 아니라 점수 + 항목별 기여도로 즉시 보임 |
+| **QA 결정의 일관성** | 동일 데이터면 동일 결론 → 인적 편차로 인한 잘못된 GO 의사결정 차단 |
+| **감사 가능성** | 모든 판단이 데이터와 룰로 남음 → 사후 회고와 감사 대응 가능 |
+| **확장 가능한 의사결정 시스템** | Jira / GitHub Actions / CI XML로 입력만 갈아끼우면 그대로 동작 → 자산화 |
+
+---
+
 ## 프로젝트 구조
 
-```text
+```
 qa-release-gate/
 - data/
   - release_sample.json
@@ -101,9 +149,11 @@ qa-release-gate/
 - run_gate.py
 ```
 
+---
+
 ## 빠른 실행
 
-```bash
+```
 pip install -r requirements.txt
 python run_gate.py
 ```
@@ -112,7 +162,7 @@ python run_gate.py
 
 예상 출력:
 
-```text
+```
 Release Gate: NO_GO
 Risk Score: 100/100
 Report: reports/release_gate_report.md
@@ -120,11 +170,11 @@ Report: reports/release_gate_report.md
 
 ## 대시보드 실행
 
-```bash
+```
 streamlit run dashboard/streamlit_app.py
 ```
 
-대시보드에서는 다음 항목을 확인할 수 있습니다.
+대시보드에서 확인 가능한 항목:
 
 - 릴리즈 판정
 - Risk Score
@@ -136,23 +186,19 @@ streamlit run dashboard/streamlit_app.py
 
 ## 테스트
 
-```bash
+```
 pytest -q
 ```
 
-테스트는 다음 판단 로직을 검증합니다.
-
-- P1 미해결 결함이 있으면 `NO_GO`
-- 중간 수준 리스크는 `CONDITIONAL_GO`
-- 낮은 리스크는 `GO`
-- 리스크 점수는 100점을 넘지 않음
-- resolved defect는 리스크에 포함하지 않음
+---
 
 ## QA 포트폴리오 관점
 
-이 프로젝트는 자동화 스크립트보다 릴리즈 품질 판단에 초점을 둡니다.
+이 프로젝트는 자동화 스크립트보다 **릴리즈 품질 판단**에 초점을 둡니다.
 
-시니어 QA 관점에서 중요한 것은 "테스트를 실행했다"가 아니라, "이 릴리즈가 나가도 되는지 어떤 근거로 판단했는가"입니다. 이 저장소는 그 판단 기준을 데이터, 규칙, 리포트, 대시보드로 분리해 보여줍니다.
+시니어 QA 관점에서 중요한 것은 *"테스트를 실행했다"* 가 아니라, *"이 릴리즈가 나가도 되는지 어떤 근거로 판단했는가"* 입니다. 이 저장소는 그 판단 기준을 **데이터 → 룰 → 리포트 → 대시보드** 로 분리해 보여줍니다.
+
+---
 
 ## 확장 아이디어
 
@@ -161,15 +207,3 @@ pytest -q
 - 릴리즈별 리스크 추세 시각화
 - LLM을 사용한 릴리즈 요약 초안 생성
 - `aiops-sentinel`과 연결해 AI가 작성한 릴리즈 요약의 누락/과장 여부 평가
-
-## GitHub About 추천 문구
-
-```text
-시니어 QA 관점의 릴리즈 리스크 판단 대시보드. 테스트 결과, 미해결 결함, 변경 범위, 자동화 커버리지를 종합해 GO / CONDITIONAL_GO / NO_GO를 산출합니다.
-```
-
-## 추천 Topics
-
-```text
-qa, release-gate, risk-based-testing, test-strategy, quality-engineering, python, streamlit
-```
