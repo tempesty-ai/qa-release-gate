@@ -123,24 +123,54 @@ PR을 올리면 게이트가 자동 실행되고, **NO_GO면 빌드가 실패해
 
 ```yaml
 name: QA Release Gate
-on: [pull_request]
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
 jobs:
   release-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - run: pip install -r requirements.txt
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # The gate's own decision logic is regression-tested before it is trusted
+      # to block anything.
+      - name: Verify gate logic
+        run: pytest -q
+
+      # --strict exits 1 on NO_GO, so the build fails and the merge is blocked.
       - name: Run release gate
-        run: python run_gate.py
-      - name: Fail build on NO_GO
-        run: |
-          if grep -q "NO_GO" reports/release_gate_report.md; then
-            echo "::error::Release gate returned NO_GO — 릴리즈 보류"
-            exit 1
-          fi
+        run: python run_gate.py --strict
+
+      # Uploaded even on failure: a NO_GO is exactly when the report is needed.
+      - name: Upload gate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-gate-report
+          path: reports/release_gate_report.md
+          if-no-files-found: error
 ```
+
+판정을 리포트 문자열 grep 으로 읽지 않고 **종료 코드**로 전달합니다.
+리포트 문구가 바뀌어도 CI 가 깨지지 않고, 판정과 빌드 성패가 한 곳에서 결정됩니다.
+
+| 종료 코드 | 의미 |
+| --- | --- |
+| `0` | `GO` 또는 `CONDITIONAL_GO` — 진행 가능 |
+| `1` | `NO_GO` — 릴리즈 보류 (`--strict` 일 때만) |
+
+`--strict` 없이 실행하면 판정과 리포트만 출력하고 종료 코드는 항상 `0` 입니다. 로컬 확인용입니다.
 
 > 이 구성으로 "품질 게이트를 통과해야만 배포된다"는 원칙을 파이프라인에 강제합니다.
 > 릴리즈 판단이 사람의 구두 승인이 아니라, 재현 가능한 자동 검증 단계로 남습니다.
@@ -169,6 +199,7 @@ qa-release-gate/
   - defects_sample.csv
   - test_results_sample.csv
   - change_scope_sample.json
+- pytest.ini
 - gate/
   - data_loader.py
   - risk_model.py
@@ -189,6 +220,7 @@ qa-release-gate/
 ```bash
 pip install -r requirements.txt
 python run_gate.py                       # reports/release_gate_report.md 생성
+python run_gate.py --strict              # NO_GO 면 exit 1 (CI 용)
 streamlit run dashboard/streamlit_app.py # 대시보드
 pytest -q                                # 판단 로직 검증
 ```

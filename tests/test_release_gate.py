@@ -51,3 +51,12 @@ def test_go_for_low_risk_release() -> None:
     result = decide_gate(release, defects, tests)
 
     assert result.status == "GO"
+
+
+def test_strict_mode_exit_code_blocks_a_no_go_release() -> None:
+    """CI relies on the exit code, so it must track the gate decision."""
+    from run_gate import EXIT_NO_GO, EXIT_OK, main
+
+    # The bundled sample release is a NO_GO (open P1 + blocked critical test).
+    assert main([]) == EXIT_OK, "without --strict the run reports but never fails"
+    assert main(["--strict"]) == EXIT_NO_GO, "--strict must fail the build on NO_GO"
