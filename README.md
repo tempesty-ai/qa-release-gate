@@ -16,6 +16,26 @@
 
 이 저장소의 릴리즈 정보, 결함, 테스트 결과, 변경 범위는 모두 직접 만든 **가상 샘플 데이터**입니다. 현재 또는 과거 회사/고객사의 이슈, 운영 지표, 릴리즈 기록, 결함 데이터는 포함하지 않습니다.
 
+## Baseline·Target 증거 연동 — 제안 정책 v1
+
+[AI QA Workflow Platform](https://github.com/tempesty-ai/ai-qa-workflow-platform)의 공개 설명을
+합성 데이터 기반의 [실행 데모](examples/workflow/README.md)로 연결했습니다.
+새 정책은 **증거 충족도**와 **출시 위험**을 분리하며, `GO / CONDITIONAL_GO / NO_GO`와
+`EVIDENCE_INSUFFICIENT`를 구분합니다. 미실행·미검수·환경 오류를 통과로 간주하지 않습니다.
+
+기본 경계 20/45점, 증거 유효기간 24시간은 **검토·조정을 위한 제안**입니다. 보편적인 품질 기준이나
+실제 제품의 배포 승인이 아닙니다. [정책·예외·한계](docs/workflow-quality-gate-policy.md)를 먼저 확인하세요.
+
+```bash
+python run_workflow_gate.py --input examples/workflow/go.json --as-of 2026-10-16T00:00:00Z --strict
+```
+
+이하의 CSV 엔진·대시보드·45/80점 정책과 `run_gate.py` 동작은 그대로 유지합니다.
+새 데모의 엄격 모드는 조건부 판정도 종료 코드 3으로 보류하며, 증거 부족은 2로 보류합니다.
+`Workflow Evidence Demo` CI는 네 가지 예상 판정과 종료 코드를 검증하고 보고서를 보관합니다.
+기존 `QA Release Gate` CI는 NO_GO인 기존 샘플로 실행하므로 계속 실패합니다. 데모 CI의 성공과
+실제 릴리즈 승인·필수 머지 검사는 별도입니다.
+
 ---
 
 ## 발견한 크리티컬 리스크
