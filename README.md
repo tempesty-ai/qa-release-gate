@@ -36,6 +36,9 @@ python run_workflow_gate.py --input examples/workflow/go.json --as-of 2026-10-16
 기존 `QA Release Gate` CI는 NO_GO인 기존 샘플로 실행하므로 계속 실패합니다. 데모 CI의 성공과
 실제 릴리즈 승인·필수 머지 검사는 별도입니다.
 
+플랫폼에서 이 계약을 소비하는 변경은 [연동 PR](https://github.com/tempesty-ai/ai-qa-workflow-platform/pull/1)과
+[고정 버전 실행 안내](https://github.com/tempesty-ai/ai-qa-workflow-platform/blob/caf4c60a6e6b886a39c5de86b37c88dc60617244/docs/release-gate-integration.md)에서 확인할 수 있습니다.
+
 ---
 
 ## 발견한 크리티컬 리스크
